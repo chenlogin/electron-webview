@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>webview-tabs</title>
+    <link rel="stylesheet" href="../node_modules/electron-tabs/electron-tabs.css">
+  </head>
+  <style>
+    * {padding: 0;margin: 0;}
+  </style>
+  <body>
+    <div class="etabs-tabgroup">
+        <div class="etabs-tabs"></div>
+        <div class="etabs-buttons"></div>
+    </div>
+    <div class="etabs-views"></div>
+        
+    <script>
+        const { ipcRenderer } = require('electron');
+        const TabGroup = require("electron-tabs");
+        let tabGroup = new TabGroup();
+        tabGroup.addTab({
+            title: "Tab1",
+            src: "https://www.baidu.com",
+            active: true,
+            visible: true,
+            closable: true,
+            webviewAttributes: {
+                webpreferences: 'minimumFontSize=12'
+            },
+        });
+        
+        ipcRenderer.on('newTab',function (e, url) { 
+          tabGroup.addTab({
+              title: "Tab2",
+              src: url,
+              active: true,
+              visible: true,
+              closable: true,
+              webviewAttributes: {
+                  webpreferences: 'minimumFontSize=12'
+              }
+          }); 
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Webview</title>
+  </head>
+  <style>
+      webview{ height: 100px; }
+  </style>
+  <body>
+    <!--
+        从用法上来看，electron的webview和html的iframe，非常类似。
+        但是webview的权限要比iframe要大，定制程度要比iframe更高。
+        但是，electron官方，是推荐大家使用iframe，而不是webview
+
+        在正常的浏览器中，这四种情况都是能新开窗口的。
+        在electron的webview中，对于_blank，是默认拦截的！对于.open/ 是使用参数allowpopups 控制是否拦截
+
+        主进程web-contents-created监听也可拦截该跳转
+    -->
+    <div>
+        <webview id="webview" allowpopups src="./jump.html"></webview>
+    </div>
+    <div>
+        <button id="showAlert">对话框</button>
+    </div>
+        
+    <script>
+        const { ipcRenderer } = require('electron');
+        const $ = document.querySelector.bind(document);
+        const webview = $('#webview');
+        
+        webview.addEventListener('did-start-loading', ()=>{
+            console.log("did-start-loading");
+        })
+        webview.addEventListener('did-stop-loading', ()=>{
+            console.log("did-stop-loading");
+        })
+        webview.addEventListener('dom-ready', e => {
+            console.log('webiew dom-ready');
+            // webview.openDevTools()
+        });
+
+        document.getElementById("showAlert").onclick = function(){
+                ipcRenderer.send('asynchronous-message', 'showAlert');
+            }
+        
+        ipcRenderer.on('asynchronous-reply', (event, arg) => {
+            console.log(arg) // prints "success"
+        })
+    </script>
+  </body>
+</html>
