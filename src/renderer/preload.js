@@ -40,7 +40,7 @@ window.addEventListener('keydown', event => {
   const { altKey, ctrlKey, metaKey, keyCode } = event;
   //alt + ctrl + (Command | Windows) + d 
   if(altKey && ctrlKey && metaKey && keyCode === 68){
-
+      //在渲染进程中使用主进程模块，创建窗口时需要开启remote模块
       const currentWindow = remote.getCurrentWindow();
       currentWindow && currentWindow.toggleDevTools();
       event.preventDefault();
@@ -48,7 +48,6 @@ window.addEventListener('keydown', event => {
 },false);
 
 
-//1、点击创建子窗口，keydown
 //2、拦截
 //3、录屏:https://www.cnblogs.com/olivers/p/12609427.html
 //4、.YQ

@@ -3,11 +3,12 @@ const path = require('path');
 const nodeDiskInfo = require('node-disk-info');
 
 import "./screenshots";
-import { createMainWindow, createTabWindow, createChildrenWindow, createBrowserView } from './createWindow';
+import { createMainWindow, createTabWindow, createChildrenWindow, createBrowserView, createDialog } from './createWindow';
 
 let mainWindow = null;
 let tab1 = null;
 let tab2 = null;
+let childWindow = null;
 function createWindow () {
   //创建浏览器窗口
   mainWindow = createMainWindow({
@@ -33,12 +34,6 @@ function createWindow () {
     mainWindow,
     url: "../../pages/webview-tab.html"
   })
-
-  //添加子窗口
-  createChildrenWindow({
-    mainWindow,
-    url:"../../pages/index.html"
-  });
 
   //在加载页面时，渲染进程第一次完成绘制时，如果窗口还没有被显示，渲染进程会发出 ready-to-show 事件 。 在此事件后显示窗口将没有视觉闪烁
   mainWindow.once('ready-to-show', () => {
@@ -67,28 +62,32 @@ app.whenReady().then(() => {
   ipcMain.on('asynchronous-message', (event, arg) => {
     if(arg === 'showAlert'){
       //展示对话框
-      dialog.showOpenDialog(tab1, {
-          properties: ['openFile', 'openDirectory']
-      }).then(result => {
-          //console.log(result)
-      }).catch(err => {
-          console.log(err)
+      createDialog({
+        browserWindow: tab1,
+      })
+    }else if(arg === 'showModalWindow'){
+      //添加子窗口
+      childWindow = createChildrenWindow({
+        parent:tab1,
+        url:"../../pages/index.html"
       });
+    }else if(arg === 'hideModalWindow'){
+      childWindow.close();
+      childWindow = null;
     }
-    event.reply('asynchronous-reply', 'success');
+    event.reply('asynchronous-reply', 'success:' + arg);
   })
 
-  // protocol.interceptHttpProtocol('http', (request, callback) => {
+  protocol.interceptHttpProtocol('http', (request, callback) => {
 
-  //   console.log("========request url=======:", request.url);
-  //   callback({
-  //         url: `http://cdn.X.com/fs-resource/80337589211d24b1d76a9272c038a785`,
-  //         session:null
-  //       })
-  // }, (error) => {
-  //   if (error) console.error('无法注册协议')  
-  // })
-
+    console.log("========request url=======:", request.url);
+    callback({
+          url: `https://dimg08.c-ctrip.com/images/100a0g00000087qb8E7CE_C_221_166.jpg`,
+          session:null
+        })
+  }, (error) => {
+    if (error) console.error('无法注册协议')  
+  })
 })
 
 app.on('web-contents-created', (e, contents) => {

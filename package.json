@@ -33,7 +33,11 @@
       "!node_modules/**/*",
       "package.json",
       "src/**",
-      "pages/**"
+      "pages/**",
+      "dist/**",
+      "node_modules/electron-screenshots/**/*",
+      "node_modules/electron-tabs/**/*",
+      "node_modules/loudness/**/*"
     ],
     "mac": {
       "icon": "./assets/logo.icns"

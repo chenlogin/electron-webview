@@ -15,6 +15,15 @@
       <button onclick="saveToImg()" style="background-color: greenyellow;">保存</button>
       <button onclick="earser()" style="background-color: red;">橡皮擦</button>
       <button style="background-color: blueviolet;">录屏</button>
+      <button id="close" style="background-color:blue;">关闭窗口</button>
     </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        document.getElementById("close").onclick = function(){
+                ipcRenderer.send('asynchronous-message', 'hideModalWindow');
+            }
+    </script>
+
   </body>
 </html>

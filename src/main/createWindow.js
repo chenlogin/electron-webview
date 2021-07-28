@@ -34,11 +34,17 @@ export function createTabWindow(params) {
 }
 
 export function createChildrenWindow(params) {
-    let { mainWindow, url} = params;
-    const tabWindow = new BrowserWindow();
-    mainWindow.addTabbedWindow(tabWindow);
-    const childWindow = new BrowserWindow({ parent: tabWindow,modal: false,show:true });
+    let { parent, url} = params;
+    const childWindow = new BrowserWindow({ 
+      parent: parent,
+      modal: true,
+      webPreferences: {
+          nodeIntegration: true
+      },
+      show:true 
+    });
     childWindow.loadFile(path.join(__dirname, url))
+    return childWindow;
 }
 
 export function createBrowserView(params) {
@@ -52,4 +58,15 @@ export function createBrowserView(params) {
       view.setBounds({ x: 900, y: 100, width: 200, height: 220 })
       view.setBackgroundColor('#FF996633');
       view.webContents.loadFile(path.join(__dirname, url))
+}
+
+export function createDialog(params) {
+  let { browserWindow } = params
+  dialog.showOpenDialog(browserWindow, {
+    properties: ['openFile', 'openDirectory']
+  }).then(result => {
+      //console.log(result)
+  }).catch(err => {
+      console.log(err)
+  });
 }

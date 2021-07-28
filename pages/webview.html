@@ -24,6 +24,9 @@
     <div>
         <button id="showAlert">对话框</button>
     </div>
+    <div>
+        <button id="showModalWindow">模态窗口</button>
+    </div>
         
     <script>
         const { ipcRenderer } = require('electron');
@@ -44,6 +47,10 @@
         document.getElementById("showAlert").onclick = function(){
                 ipcRenderer.send('asynchronous-message', 'showAlert');
             }
+        
+        document.getElementById("showModalWindow").onclick = function(){
+                ipcRenderer.send('asynchronous-message', 'showModalWindow');
+            }   
         
         ipcRenderer.on('asynchronous-reply', (event, arg) => {
             console.log(arg) // prints "success"
