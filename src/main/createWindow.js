@@ -8,6 +8,7 @@ export function createMainWindow(params) {
         height: 800,
         // frame: false,
         webPreferences: {
+          webSecurity: false,
           enableRemoteModule:true,
           preload: path.join(__dirname, preload)
         },
@@ -22,6 +23,7 @@ export function createTabWindow(params) {
     let { mainWindow, url} = params;
     const tabWindow = new BrowserWindow({
         webPreferences: {
+            webSecurity: false,
             nodeIntegration: true,
             webviewTag:true
         }
@@ -34,10 +36,10 @@ export function createTabWindow(params) {
 }
 
 export function createChildrenWindow(params) {
-    let { parent, url} = params;
+    let { parent, url, modal} = params;
     const childWindow = new BrowserWindow({ 
       parent: parent,
-      modal: true,
+      modal: modal,
       webPreferences: {
           nodeIntegration: true
       },
@@ -51,6 +53,7 @@ export function createBrowserView(params) {
     let { mainWindow, url} = params;
     const view = new BrowserView({
         webPreferences: {
+          webSecurity: false,
           nodeIntegration: true
         },
       })

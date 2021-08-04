@@ -25,3 +25,17 @@
 - 在渲染进程中使用主进程模块
     - WARNING, The remote module is deprecated. Instead of remote, use ipcRenderer and ipcMain.
     - 出于安全原因remote是不开启的,enableRemoteModule:true
+- BrowserView和webview差异
+    - BrowserView导入地址，如果在原页面上再加一些其他元素，需要在外层的BrowserWindow的页面中添加
+    - webview导入地址，如果在原页面上再加一些其他元素，直接在webview的地方直接加入DOM元素
+    - webview相比BrowserWindow使用简单，但Electron的 webview 标签基于 Chromium webview，后者正在经历巨大的架构变化。 这将影响 webview 的稳定性，包括呈现、导航和事件路由。Electron >= 5禁用 webview 标签。 在构造 BrowserWindow 时，需要通过设置 webviewTag webPreferences选项来启用标签。
+- 拦截请求
+    - 为了提高页面加载速度，将比较大的文件预先下载到本地。然后在请求的时候先判断本地文件是否存在，存在从本地加载，不存在时再从网络下载，并进行缓存。
+    - protocol.interceptHttpProtocol
+    - session.defaultSession.webRequest
+    - 可封装些常用的方法
+        - isCacheResource
+        - hasCacheResource
+        - cacheResource
+        - getCacheResourcePath
+        - toLocalURL

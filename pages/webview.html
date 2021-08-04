@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Webview</title>
+    <script src="../src/renderer/desktopCapturer.js"></script>
   </head>
   <style>
       webview{ height: 100px; }
@@ -19,13 +20,16 @@
         主进程web-contents-created监听也可拦截该跳转
     -->
     <div>
-        <webview id="webview" allowpopups src="./jump.html"></webview>
+        <webview id="webview" allowpopups src="./jump.html" webpreferences="webSecurity=flase"></webview>
     </div>
     <div>
         <button id="showAlert">对话框</button>
     </div>
     <div>
         <button id="showModalWindow">模态窗口</button>
+    </div>
+    <div>
+        <button id="intercept">请求拦截</button>
     </div>
         
     <script>
@@ -41,7 +45,6 @@
         })
         webview.addEventListener('dom-ready', e => {
             console.log('webiew dom-ready');
-            // webview.openDevTools()
         });
 
         document.getElementById("showAlert").onclick = function(){
@@ -50,11 +53,15 @@
         
         document.getElementById("showModalWindow").onclick = function(){
                 ipcRenderer.send('asynchronous-message', 'showModalWindow');
-            }   
-        
+            }
+        document.getElementById("intercept").onclick = function(){
+                ipcRenderer.send('asynchronous-message', 'intercept');
+            }  
         ipcRenderer.on('asynchronous-reply', (event, arg) => {
             console.log(arg) // prints "success"
         })
     </script>
+
+   
   </body>
 </html>

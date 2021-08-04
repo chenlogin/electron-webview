@@ -1,3 +1,7 @@
+/**
+ * 主进程
+ * 截屏
+ */
 import { app, globalShortcut } from 'electron'
 import Screenshots from 'electron-screenshots'
 

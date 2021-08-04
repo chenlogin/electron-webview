@@ -1,9 +1,10 @@
-const {app, ipcMain, BrowserView, BrowserWindow, globalShortcut, dialog, desktopCapturer, protocol} = require('electron');
-const path = require('path');
+const { app, ipcMain, BrowserWindow } = require('electron');
 const nodeDiskInfo = require('node-disk-info');
 
 import "./screenshots";
 import { createMainWindow, createTabWindow, createChildrenWindow, createBrowserView, createDialog } from './createWindow';
+import { intercept } from './intercept-protocol';
+import requestInterception from './intercept-webrequest';
 
 let mainWindow = null;
 let tab1 = null;
@@ -41,7 +42,10 @@ function createWindow () {
   })
 
   // and load the index.html of the app.
-  mainWindow.loadURL('https://www.baidu.com/')
+  mainWindow.loadURL('https://www.baidu.com/index.html',{
+    httpReferrer:"http://www.baidu.com/",
+    userAgent:"__MyAgent__"
+  })
   
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
@@ -51,54 +55,62 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  
+  // protocol拦截
+  // intercept()
   createWindow()
-
+  
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
+  }) 
+})
 
-  ipcMain.on('asynchronous-message', (event, arg) => {
-    if(arg === 'showAlert'){
-      //展示对话框
-      createDialog({
-        browserWindow: tab1,
-      })
-    }else if(arg === 'showModalWindow'){
-      //添加子窗口
-      childWindow = createChildrenWindow({
-        parent:tab1,
-        url:"../../pages/index.html"
-      });
-    }else if(arg === 'hideModalWindow'){
-      childWindow.close();
-      childWindow = null;
-    }
-    event.reply('asynchronous-reply', 'success:' + arg);
-  })
+// webRequest拦截
+requestInterception()
 
-  protocol.interceptHttpProtocol('http', (request, callback) => {
-
-    console.log("========request url=======:", request.url);
-    callback({
-          url: `https://dimg08.c-ctrip.com/images/100a0g00000087qb8E7CE_C_221_166.jpg`,
-          session:null
-        })
-  }, (error) => {
-    if (error) console.error('无法注册协议')  
-  })
+ipcMain.on('asynchronous-message', (event, arg) => {
+  if(arg === 'showAlert'){
+    //展示对话框
+    createDialog({
+      browserWindow: tab1,
+    })
+  }else if(arg === 'showModalWindow'){
+    //添加子窗口
+    childWindow = createChildrenWindow({
+      parent:tab1,
+      modal: false,
+      url:"../../pages/index.html"
+    });
+  }else if(arg === 'intercept'){
+    //添加子窗口
+    childWindow = createChildrenWindow({
+      parent:tab1,
+      modal: true,
+      url:"../../pages/intercept.html"
+    });
+  }else if(arg === 'startRecording'){
+    createChildrenWindow({
+      parent:tab1,
+      modal: false,
+      url:"../../pages/desktopCapturer.html"
+    });
+  }else if(arg === 'hideModalWindow'){
+    childWindow.close();
+    childWindow = null;
+  }
+  event.reply('asynchronous-reply', 'success:' + arg);
 })
 
 app.on('web-contents-created', (e, contents) => {
   // Check for a webview
-  console.log("content=====",contents.getType());
   if (contents.getType() == 'webview') {
       // Listen for any new window events
       //Emitted when the page requests to open a new window for a url. 
       //It could be requested by window.open or an external link like <a target='_blank'>.
       contents.on('new-window', (e, ...url) => {
-          console.log("url=====:",url[0])
+          console.log("new-window-url=====:",url[0])
           e.preventDefault();//阻止Electron自动创建新的BrowserWindow实例
           tab2.webContents.send('newTab', url[0])
       })
@@ -116,43 +128,11 @@ app.on('window-all-closed', function () {
 // code. You can also put them in separate files and require them here.
 
 //扫描盘符
-nodeDiskInfo.getDiskInfo()
-    .then(disks => {
+nodeDiskInfo.getDiskInfo().then(disks => {
         //console.log('ASYNC WAY', disks)
-    })
-    .catch(reason => {
+    }).catch(reason => {
         console.error(reason);
     });
 
-/** 
-* 为了提高页面加载速度，我们会将比较大的文件预先下载到本地。
-* 然后在请求的时候先判断本地文件是否存在，存在从本地加载，不存在时再从网络下载，并进行缓存，
-* 可以使用protocol.interceptHttpProtocol实现
-*/
 
-// protocol.interceptHttpProtocol('http', (request, callback) => {
-//   // if(AssetsHelper.isCacheResource(request.url)){
-//   //   if (!AssetsHelper.hasCacheResource(request.url)) {
-//   //     AssetsHelper.cacheResource(request.url, function () {
-//   //       let localURL = AssetsHelper.getCacheResourcePath(request.url)
-//   //       callback({url: toLocalURL(localURL)}) 
-//   //     })
-//   //   } else {
-//   //     let localURL = AssetsHelper.getCacheResourcePath(request.url)
-//   //     callback({url: toLocalURL(localURL)})
-//   //   }
-//   // } else {
-//   //   callback({
-//   //     url: request.url
-//   //   })
-//   // }
-
-//   console.log("request url:", request.url);
-//   callback({
-//         url: request.url
-//       })
-
-// }, (error) => {
-//   if (error) console.error('无法注册协议')  
-// })
   

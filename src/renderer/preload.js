@@ -48,8 +48,8 @@ window.addEventListener('keydown', event => {
 },false);
 
 
-//2、拦截
-//3、录屏:https://www.cnblogs.com/olivers/p/12609427.html
-//4、.YQ
-//5、ant design
-//6、扫描ip
+
+
+//3、.YQ
+//4、ant design
+//5、扫描ip
