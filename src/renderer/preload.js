@@ -46,8 +46,3 @@ window.addEventListener('keydown', event => {
       event.preventDefault();
   }
 },false);
-
-
-
-
-//扫描ip

@@ -1,16 +1,17 @@
-const { app, ipcMain, BrowserWindow } = require('electron');
+const { app, ipcMain, BrowserWindow, dialog } = require('electron');
 const nodeDiskInfo = require('node-disk-info');
 
 import "./screenshots";
 import { createMainWindow, createTabWindow, createChildrenWindow, createBrowserView, createDialog } from './createWindow';
 import { intercept } from './intercept-protocol';
 import requestInterception from './intercept-webrequest';
+import { readFile, writeFile } from './createFile';
 
 let mainWindow = null;
 let tab1 = null;
 let tab2 = null;
 let childWindow = null;
-let preFilePath = ''; //外部文件路径
+let preFilePath = ''; //关联文件路径
 
 function createWindow () {
   //创建浏览器窗口
@@ -40,13 +41,8 @@ function createWindow () {
 
   //在加载页面时，渲染进程第一次完成绘制时，如果窗口还没有被显示，渲染进程会发出 ready-to-show 事件 。 在此事件后显示窗口将没有视觉闪烁
   mainWindow.once('ready-to-show', () => {
-    console.log('====ready-to-show')
+    console.log('====mainWindow-ready-to-show')
     mainWindow.show();
-
-    // 检查是否存在需要直接打开的文件，有的话就直接打开
-    if (preFilePath) {
-      //mainWindow.webContents.send('lm-open-file', [preFilePath])
-    }
   })
 
   // and load the index.html of the app.
@@ -63,11 +59,19 @@ function createWindow () {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  
+  console.log("====appReady");
   // protocol拦截
   // intercept()
   createWindow()
+
+  mainWindow.once('ready-to-show', () => {
   
+    // 检查是否存在需要直接打开的文件，有的话就直接打开
+    if (preFilePath) {
+      openFile(preFilePath)
+      preFilePath = ''
+    }
+  })
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -142,26 +146,35 @@ nodeDiskInfo.getDiskInfo().then(disks => {
         console.error(reason);
     });
 
-
+function openFile(path){
+  let extensionName = path.split(".")[1];
+  let newPath = '';
+  readFile(path).then(fileData => {
+    newPath = path.split(".")[0] + (extensionName == "chen" ? ".html" : ".js");
+    writeFile(newPath, fileData)
+  }).then(()=>{
+    new BrowserWindow({
+      width: 500,
+      height: 500,
+    }).loadFile(newPath)
+  }) 
+}
 //关联文件唤起
 app.on('will-finish-launching', function(){
   console.log('====will-finish-launching')
-  // 打开文件事件（MacOS有效）
+  // 打开关联文件（MacOS有效）
   app.on("open-file", (event, filePath) => {
-    console.log("====open-file: ", filePath);
-    // event.preventDefault();
-    // const fw = BrowserWindow.getFocusedWindow();
-    // if (fw) {
-    //   fw.webContents.send("lm-open-file", [filePath]);
-    // } else {
-    //   preFilePath = filePath
-    // }
+    if (mainWindow) {
+      openFile(filePath);
+    } else {
+      preFilePath = filePath
+    }
   });
   
   //检查进程是否含有参数(Windows有效)
-  // if (process.platform ==='win32' && process.argv.length >= 2) {
-  //   // windows系统当没有路径参数时这个位置默认有个.，需要加以判断
-  //   preFilePath = process.argv[1] === '.' ? '' : process.argv[1]
-  // }
+  if (process.platform ==='win32' && process.argv.length >= 2) {
+    // windows系统当没有路径参数时这个位置默认有个.，需要加以判断
+    preFilePath = process.argv[1] === '.' ? '' : process.argv[1]
+  }
 })
   

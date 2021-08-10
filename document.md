@@ -39,3 +39,6 @@
         - cacheResource
         - getCacheResourcePath
         - toLocalURL
+- 关联文件
+    - 1、electron-builder设置关联属性fileAssociations
+    - 2、监听open-file获取文件路径
