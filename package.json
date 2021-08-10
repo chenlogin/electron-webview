@@ -12,6 +12,18 @@
     "productName": "ElectronApp",
     "appId": "com.sirius.miniapp",
     "copyright": "meng",
+    "fileAssociations": [
+      {
+        "ext": "chen",
+        "name": "html文件",
+        "role": "Editor"
+      },
+      {
+        "ext": "cm",
+        "name": "js文件",
+        "role": "Editor"
+      }
+    ],
     "directories": {
       "output": "build"
     },

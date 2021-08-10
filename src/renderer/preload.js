@@ -50,6 +50,4 @@ window.addEventListener('keydown', event => {
 
 
 
-//3、.YQ
-//4、ant design
-//5、扫描ip
+//扫描ip
